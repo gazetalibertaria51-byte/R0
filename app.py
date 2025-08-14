@@ -4,6 +4,10 @@ from huggingface_hub import InferenceClient
 """
 For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
 """
+import os
+print(os.getenv("HUGGINGFACEHUB_API_TOKEN") is not None)  # True means env var is loaded
+print(os.getenv("HUGGINGFACEHUB_API_TOKEN")[:5])          # Should start with 'hf_'
+
 client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
 
 import app_math as app_math
