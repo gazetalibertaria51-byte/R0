@@ -6,6 +6,8 @@ For more information on `huggingface_hub` Inference API support, please check th
 """
 client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
 
+import app_math as app_math
+
 
 def respond(
     message,
