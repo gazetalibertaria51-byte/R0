@@ -6,3 +6,5 @@ gradio>=4.0.0
 datasets
 safetensors
 huggingface_hub==0.25.2
+mathruler==0.1.0
+
