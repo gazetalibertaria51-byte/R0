@@ -10,29 +10,27 @@ import app_math as app_math  # keeping your existing import
 HF_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 MODEL_ID = "HuggingFaceH4/zephyr-7b-beta"
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-dtype = torch.float16 if device == "cuda" else torch.float32
-
+# Automatically map model across available devices (GPU/CPU)
 tokenizer = AutoTokenizer.from_pretrained(
     MODEL_ID,
-    token=HF_TOKEN,  # uses your HF token if needed
+    token=HF_TOKEN,
 )
 
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_ID,
-    torch_dtype=dtype,
+    device_map="auto",          # << key change
+    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
     low_cpu_mem_usage=True,
-    token=HF_TOKEN,  # uses your HF token if needed
+    token=HF_TOKEN,
 )
-model.to(device)
 
-# Ensure pad token is set for generation
+# Ensure pad token is set
 if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
 
 def respond(message, history: list[tuple[str, str]], system_message, max_tokens, temperature, top_p):
-    # Build chat messages with system + history + latest user message
+    # Build chat messages
     messages = [{"role": "system", "content": system_message}]
     for u, a in history:
         if u:
@@ -47,7 +45,7 @@ def respond(message, history: list[tuple[str, str]], system_message, max_tokens,
         add_generation_prompt=True,
         tokenize=True,
         return_tensors="pt",
-    ).to(device)
+    ).to(model.device)
 
     # Stream generation
     streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
@@ -63,7 +61,6 @@ def respond(message, history: list[tuple[str, str]], system_message, max_tokens,
         "streamer": streamer,
     }
 
-    # Run generation in a background thread so we can yield tokens as they arrive
     thread = threading.Thread(target=model.generate, kwargs=gen_kwargs)
     thread.start()
 
@@ -74,8 +71,6 @@ def respond(message, history: list[tuple[str, str]], system_message, max_tokens,
 
 
 # ---- Gradio UI ----
-# For information on how to customize the ChatInterface, peruse the gradio docs:
-# https://www.gradio.app/docs/chatinterface
 demo = gr.ChatInterface(
     respond,
     additional_inputs=[
@@ -88,4 +83,5 @@ demo = gr.ChatInterface(
 
 if __name__ == "__main__":
     demo.launch()
+
 
