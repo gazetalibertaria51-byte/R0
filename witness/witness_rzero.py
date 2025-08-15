@@ -32,3 +32,17 @@ if __name__ == "__main__":
     # Quick manual test
     example = "How should we handle a sensitive diplomatic dispute?"
     print(query_rzero_with_witness(example))
+
+class WitnessRZero:
+    def __init__(self, device="cpu", model_id="HuggingFaceH4/zephyr-7b-beta"):
+        self.device = device
+        # Swap this out for your actual R-Zero client later if needed
+        from huggingface_hub import InferenceClient
+        self.client = InferenceClient(model_id)
+
+    def generate(self, user_input: str, **kwargs) -> str:
+        from witness.witness_protocol import ABRAHAMIC_SYSTEM_PROMPT, witness_review
+        full_prompt = f"{ABRAHAMIC_SYSTEM_PROMPT}\n\nUser: {user_input}"
+        # Replace with actual call to R-Zero
+        result = self.client.text_generation(full_prompt, **kwargs)
+        return witness_review(result)
