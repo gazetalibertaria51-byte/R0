@@ -4,4 +4,4 @@ torch==2.2.2
 accelerate==0.33.0
 huggingface_hub==0.24.5
 mathruler==0.1.0
-
+pylatexenc
