@@ -23,11 +23,17 @@ def query_rzero_with_witness(user_input: str) -> str:
 # New class wrapper for app.py usage
 # -------------------------
 
+import os
+from huggingface_hub import InferenceClient
+from witness.witness_protocol import ABRAHAMIC_SYSTEM_PROMPT, witness_review
+
 class WitnessRZero:
-    def __init__(self, device="cpu", model_id="HuggingFaceH4/zephyr-7b-beta"):
+    def __init__(self, device="cpu", model_id="your-featherless-ai-model-id"):
         self.device = device
-        from huggingface_hub import InferenceClient
-        self.client = InferenceClient(model_id)
+        self.client = InferenceClient(
+            model_id,
+            token=os.getenv("HUGGINGFACEHUB_API_TOKEN")  # must match repo secret name
+        )
 
     def generate(self, user_input: str, **kwargs) -> str:
         full_prompt = f"{ABRAHAMIC_SYSTEM_PROMPT}\n\nUser: {user_input}"
